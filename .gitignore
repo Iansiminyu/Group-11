@@ -1,0 +1,15 @@
+# PHP
+*.log
+*.txt
+/vendor/
+
+# PostgreSQL backups
+*.dump
+*.backup
+
+# IDE files
+.idea/
+*.vscode/
+
+# Composer files
+composer.lock
