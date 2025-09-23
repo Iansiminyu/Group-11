@@ -1,49 +1,79 @@
 <?php
-session_start();
 require 'config.php';
 require 'helpers.php';
 
-if(!isset($_SESSION['temp_user_id'])){ header("Location: login.php"); exit; }
+if (!isset($_SESSION['temp_user_id'])) {
+    header("Location: login.php");
+    exit;
+}
 
-if($_SERVER['REQUEST_METHOD']==='POST'){
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code = trim($_POST['code']);
-    if(verify2FACode($pdo,$_SESSION['temp_user_id'],$code)){
+    
+    // Clean up expired codes first
+    $pdo->exec("DELETE FROM two_factor_codes WHERE expires_at < NOW()");
+    
+    if (verify2FACode($pdo, $_SESSION['temp_user_id'], $code)) {
         $_SESSION['user_id'] = $_SESSION['temp_user_id'];
         unset($_SESSION['temp_user_id']);
         unset($_SESSION['2fa_message']);
-        header("Location: dashboard.php"); exit;
-    } else { $error="Invalid or expired verification code."; }
+        header("Location: dashboard.php");
+        exit;
+    } else {
+        $error = "Invalid or expired verification code.";
+    }
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Verify 2FA</title>
-<style>
-body { font-family: Arial; background:#f4f4f9; }
-.container { max-width:400px; margin:50px auto; padding:20px; background:white; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
-h2 { text-align:center; margin-bottom:20px; }
-input { width:100%; padding:15px; font-size:18px; text-align:center; letter-spacing:5px; margin:10px 0; border-radius:5px; border:2px solid #ddd; }
-button { width:100%; padding:12px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; transition:0.3s; }
-button:hover { background:#218838; }
-.info { background:#e7f3ff; padding:15px; border-radius:5px; margin-bottom:15px; text-align:center; }
-.error { color:red; background:#ffeaea; padding:10px; border-radius:5px; text-align:center; }
-.resend { text-align:center; margin-top:15px; }
-a { color:#007bff; text-decoration:none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify 2FA</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .verify-container { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; }
+        .code-input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; border: 2px solid #ddd; border-radius: 5px; margin: 20px 0; }
+        .btn { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin: 10px 0; }
+    </style>
 </head>
 <body>
-<div class="container">
-<h2>Verify Your Identity</h2>
-<?php if(isset($_SESSION['2fa_message'])): ?><div class="info"><?= $_SESSION['2fa_message'] ?></div><?php endif; ?>
-<?php if(isset($error)): ?><div class="error"><?= $error ?></div><?php endif; ?>
-<form method="POST">
-<input type="text" name="code" placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}" required autocomplete="off">
-<button type="submit">Verify & Continue</button>
-</form>
-<div class="resend"><p>Didn't receive the code? <a href="login.php">Try again</a></p></div>
-<a href="login.php">← Back to Login</a>
-</div>
+    <div class="verify-container">
+        <h2>🔒 Verify Identity</h2>
+        
+        <?php if(isset($_SESSION['2fa_message'])): ?>
+            <div style="background: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                📧 <?= htmlspecialchars($_SESSION['2fa_message']) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if(isset($error)): ?>
+            <div class="error">⚠️ <?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+
+        <form method="POST">
+            <input type="text" name="code" class="code-input" placeholder="000000" maxlength="6" required autofocus>
+            <button type="submit" class="btn">Verify & Continue</button>
+        </form>
+        
+        <p style="margin-top: 20px;">
+            <a href="login.php">Back to Login</a>
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.querySelector('input[name="code"]');
+            codeInput.focus();
+            
+            codeInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (this.value.length === 6) {
+                    this.form.submit();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
