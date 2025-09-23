@@ -47,8 +47,13 @@ function sendEmail2FACode($email, $code) {
         return false;
     }
 }
+// Send SMS via external service(to be implemented)
+function sendSMS2FACode($phone, $code) {
+    // TODO: Integrate with an SMS gateway API to send $code to $phone
+    return true;
+}
 
-// Store 2FA code in DB - FIXED VERSION (uses database time)
+// Store 2FA code in DB - (uses database time)
 function store2FACode($pdo, $user_id, $code) {
     try {
         // Use database time for consistency
@@ -61,7 +66,7 @@ function store2FACode($pdo, $user_id, $code) {
     }
 }
 
-// Verify 2FA code - FIXED VERSION (uses database time)
+// Verify 2FA code - (uses database time)
 function verify2FACode($pdo, $user_id, $code) {
     try {
         // Use database time (NOW()) for accurate comparison
