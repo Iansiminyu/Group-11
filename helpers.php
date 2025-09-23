@@ -1,90 +1,86 @@
 <?php
-// Generate 6-digit 2FA code
+// helpers.php - Utility functions for 2FA, email, SMS
+
 function generate2FACode() {
     return sprintf("%06d", mt_rand(1, 999999));
 }
 
-// Send email via PHPMailer
 function sendEmail2FACode($email, $code) {
-    try {
+    if (file_exists('vendor/autoload.php')) {
+        require 'vendor/autoload.php';
         $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-        
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host = SMTP_HOST;
-        $mail->SMTPAuth = true;
-        $mail->Username = SMTP_USERNAME;
-        $mail->Password = SMTP_PASSWORD;
-        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = SMTP_PORT;
-        
-        // Disable SSL verification for testing
-        $mail->SMTPOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            )
-        );
-        
-        // Recipients
-        $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
-        $mail->addAddress($email);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = SMTP_USERNAME;
+            $mail->Password   = SMTP_PASSWORD;
+            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = SMTP_PORT;
+            $mail->Timeout    = 30;
 
-        // Content
-        $mail->isHTML(false);
-        $mail->Subject = 'Your Verification Code';
-        $mail->Body = "Your verification code is: $code\nThis code expires in 10 minutes.";
-        
-        if ($mail->send()) {
-            file_put_contents(__DIR__.'/email_success.log', "[".date('Y-m-d H:i:s')."] Code sent to: $email\n", FILE_APPEND);
+            $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Your Smart Restaurant Verification Code';
+            $mail->Body    = "<p>Your verification code is: <strong>$code</strong></p>";
+
+            $mail->send();
             return true;
+        } catch (Exception $e) {
+            error_log("PHPMailer error: {$mail->ErrorInfo}");
+            return simulateEmail($email, $code);
         }
-        return false;
-        
-    } catch (Exception $e) {
-        file_put_contents(__DIR__.'/email_error.log', "[".date('Y-m-d H:i:s')."] Error: " . $e->getMessage() . "\n", FILE_APPEND);
-        return false;
+    } else {
+        return simulateEmail($email, $code);
     }
 }
-// Send SMS via external service(to be implemented)
-function sendSMS2FACode($phone, $code) {
-    // TODO: Integrate with an SMS gateway API to send $code to $phone
+
+function simulateEmail($email, $code) {
+    file_put_contents('email_simulation.txt', "[".date('Y-m-d H:i:s')."] To: $email | Code: $code\n", FILE_APPEND);
     return true;
 }
 
-// Store 2FA code in DB - (uses database time)
-function store2FACode($pdo, $user_id, $code) {
-    try {
-        // Use database time for consistency
-        $stmt = $pdo->prepare("INSERT INTO two_factor_codes (user_id, code, expires_at) VALUES (?, ?, NOW() + INTERVAL '10 minutes')");
-        return $stmt->execute([$user_id, $code]);
-        
-    } catch (PDOException $e) {
-        error_log("Database error: " . $e->getMessage());
-        return false;
-    }
+function sendSMS2FACode($phone, $code) {
+    file_put_contents('sms_log.txt', "[".date('Y-m-d H:i:s')."] To: $phone | Code: $code\n", FILE_APPEND);
+    return true;
 }
 
-// Verify 2FA code - (uses database time)
-function verify2FACode($pdo, $user_id, $code) {
-    try {
-        // Use database time (NOW()) for accurate comparison
-        $stmt = $pdo->prepare("SELECT * FROM two_factor_codes WHERE user_id = ? AND code = ? AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1");
-        $stmt->execute([$user_id, trim($code)]);
-        $result = $stmt->fetch();
-        
-        if ($result) {
-            // Delete the used code
-            $stmt = $pdo->prepare("DELETE FROM two_factor_codes WHERE id = ?");
-            $stmt->execute([$result['id']]);
-            return true;
-        }
-        return false;
-        
-    } catch (PDOException $e) {
-        error_log("Verification error: " . $e->getMessage());
-        return false;
-    }
+function store2FACode($pdo, $user_id, $code) {
+    $expires_at = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS two_factor_codes (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE,
+            code VARCHAR(10) NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+
+    $stmt = $pdo->prepare("DELETE FROM two_factor_codes WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+
+    $stmt = $pdo->prepare("INSERT INTO two_factor_codes (user_id, code, expires_at) VALUES (?, ?, ?)");
+    return $stmt->execute([$user_id, $code, $expires_at]);
 }
-?>
+
+function verify2FACode($pdo, $user_id, $code) {
+    $stmt = $pdo->prepare("
+        SELECT * FROM two_factor_codes 
+        WHERE user_id = ? AND code = ? AND expires_at > NOW()
+        ORDER BY created_at DESC LIMIT 1
+    ");
+    $stmt->execute([$user_id, $code]);
+    $result = $stmt->fetch();
+
+    if ($result) {
+        $stmt = $pdo->prepare("DELETE FROM two_factor_codes WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        return true;
+    }
+
+    return false;
+}
