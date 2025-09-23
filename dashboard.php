@@ -11,41 +11,73 @@ $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
-<style>
-body { font-family: Arial; background:#f4f4f9; }
-.container { max-width:800px; margin:50px auto; padding:20px; background:white; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
-h2 { text-align:center; margin-bottom:20px; }
-.user-info { text-align:center; margin-bottom:30px; }
-.user-info span { font-weight:bold; color:#007bff; }
-.section { background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px; }
-.section p { margin:10px 0; }
-a.button { display:inline-block; padding:10px 20px; margin:5px; background:#28a745; color:white; text-decoration:none; border-radius:5px; transition:0.3s; }
-a.button:hover { background:#218838; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Smart Restaurant System</title>
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<div class="container">
-<h2>Welcome, <span><?= htmlspecialchars($user['username']) ?></span>!</h2>
+<div class="container container-wide">
+<h1>🍽️ Smart Restaurant System</h1>
 
-<div class="section">
-<h3>Security Settings</h3>
-<p>Two-Factor Authentication: 
-<?= $user['is_2fa_enabled'] ? '<span style="color:green">Enabled</span> ('.$user['two_factor_type'].')' : '<span style="color:red">Disabled</span>' ?>
-</p>
-<?php if(!$user['is_2fa_enabled']): ?>
-<a class="button" href="enable_2fa.php">Enable 2FA</a>
-<?php else: ?>
-<a class="button" href="enable_2fa.php">Change 2FA Method</a>
+<div class="user-info">
+    <h2>Welcome back, <span class="username"><?= htmlspecialchars($user['username']) ?></span>!</h2>
+    <p>Member since: <?= date('F j, Y', strtotime($user['created_at'] ?? 'now')) ?></p>
+</div>
+
+<?php if(isset($_SESSION['success'])): ?>
+    <div class="alert alert-success">
+        <?= htmlspecialchars($_SESSION['success']) ?>
+    </div>
+    <?php unset($_SESSION['success']); ?>
 <?php endif; ?>
+
+<div class="card">
+    <h3>🔒 Security Settings</h3>
+    <p><strong>Two-Factor Authentication:</strong> 
+        <?php if($user['is_2fa_enabled']): ?>
+            <span class="status-enabled">✓ Enabled</span>
+            <small>(<?= ucfirst($user['two_factor_type']) ?> verification)</small>
+        <?php else: ?>
+            <span class="status-disabled">✗ Disabled</span>
+            <small>(Your account is less secure)</small>
+        <?php endif; ?>
+    </p>
+    
+    <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
+    <?php if(!empty($user['phone'])): ?>
+        <p><strong>Phone:</strong> <?= htmlspecialchars($user['phone']) ?></p>
+    <?php endif; ?>
+    
+    <div class="mt-20">
+        <?php if(!$user['is_2fa_enabled']): ?>
+            <a class="btn btn-success btn-small" href="enable_2fa.php">🔐 Enable 2FA</a>
+        <?php else: ?>
+            <a class="btn btn-small" href="enable_2fa.php">⚙️ Change 2FA Method</a>
+        <?php endif; ?>
+    </div>
 </div>
 
-<div class="section" style="text-align:center;">
-<a class="button" href="logout.php">Logout</a>
+<div class="card">
+    <h3>🍽️ Restaurant Management</h3>
+    <p>Welcome to your restaurant management dashboard. Here you can:</p>
+    <ul style="text-align: left; margin: 20px 0;">
+        <li>📋 Manage table reservations</li>
+        <li>🍴 Process food orders</li>
+        <li>📈 View sales analytics</li>
+        <li>👥 Manage customer accounts</li>
+    </ul>
+    <div class="alert alert-info">
+        <strong>Coming Soon:</strong> Full restaurant management features will be available in the next update!
+    </div>
 </div>
+
+<div class="text-center mt-20">
+    <a class="btn btn-danger" href="logout.php">🚪 Logout</a>
+</div>
+
 </div>
 </body>
 </html>
