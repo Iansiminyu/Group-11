@@ -20,7 +20,7 @@ $user = $stmt->fetch();
 </head>
 <body>
 <div class="container container-wide">
-<h1>🍽️ Smart Restaurant System</h1>
+<h1>Smart Restaurant System</h1>
 
 <div class="user-info">
     <h2>Welcome back, <span class="username"><?= htmlspecialchars($user['username']) ?></span>!</h2>
@@ -35,7 +35,7 @@ $user = $stmt->fetch();
 <?php endif; ?>
 
 <div class="card">
-    <h3>🔒 Security Settings</h3>
+    <h3> Security Settings</h3>
     <p><strong>Two-Factor Authentication:</strong> 
         <?php if($user['is_2fa_enabled']): ?>
             <span class="status-enabled">✓ Enabled</span>
@@ -53,21 +53,21 @@ $user = $stmt->fetch();
     
     <div class="mt-20">
         <?php if(!$user['is_2fa_enabled']): ?>
-            <a class="btn btn-success btn-small" href="enable_2fa.php">🔐 Enable 2FA</a>
+            <a class="btn btn-success btn-small" href="enable_2fa.php" Enable 2FA</a>
         <?php else: ?>
-            <a class="btn btn-small" href="enable_2fa.php">⚙️ Change 2FA Method</a>
+            <a class="btn btn-small" href="enable_2fa.php">Change 2FA Method</a>
         <?php endif; ?>
     </div>
 </div>
 
 <div class="card">
-    <h3>🍽️ Restaurant Management</h3>
+    <h3> Restaurant Management</h3>
     <p>Welcome to your restaurant management dashboard. Here you can:</p>
     <ul style="text-align: left; margin: 20px 0;">
-        <li>📋 Manage table reservations</li>
-        <li>🍴 Process food orders</li>
-        <li>📈 View sales analytics</li>
-        <li>👥 Manage customer accounts</li>
+        <li> Manage table reservations</li>
+        <li> Process food orders</li>
+        <li> View sales analytics</li>
+        <li> Manage customer accounts</li>
     </ul>
     <div class="alert alert-info">
         <strong>Coming Soon:</strong> Full restaurant management features will be available in the next update!
@@ -75,7 +75,7 @@ $user = $stmt->fetch();
 </div>
 
 <div class="text-center mt-20">
-    <a class="btn btn-danger" href="logout.php">🚪 Logout</a>
+    <a class="btn btn-danger" href="logout.php"> Logout</a>
 </div>
 
 </div>
