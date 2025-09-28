@@ -377,7 +377,7 @@ require 'config.php';
                 }
                 
                 // Email configuration status
-                if (defined('SMTP_PASSWORD') && SMTP_PASSWORD !== 'your_gmail_app_password') {
+                if (defined('SMTP_PASSWORD') && SMTP_PASSWORD !== 'vszblqlobaqahbsf') {
                     echo "<div class='status-item'>
                             <h4 style='margin: 0 0 10px 0; color: #4ade80;'>📧 Email</h4>
                             <p style='margin: 0; font-size: 0.9rem;'>SMTP Configured</p>
