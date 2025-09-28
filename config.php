@@ -1,11 +1,13 @@
 <?php
-// config.php - Database and environment configuration
+// Set timezone to match your location
+date_default_timezone_set('Africa/Nairobi');
 
-$host = getenv('DB_HOST') ?: "localhost";
-$port = getenv('DB_PORT') ?: "5434";
-$dbname = getenv('DB_NAME') ?: "auth_system";
-$user = getenv('DB_USER') ?: "postgres";
-$password = getenv('DB_PASSWORD') ?: "1a2bacac";
+// Database Configuration
+$host = "localhost";
+$port = "5434";
+$dbname = "auth_system";
+$user = "postgres";
+$password = "1a2bacac";
 
 try {
     $pdo = new PDO("pgsql:host=$host;port=$port;dbname=$dbname", $user, $password);
@@ -14,14 +16,23 @@ try {
     die("❌ Connection failed: " . $e->getMessage());
 }
 
-// Email settings
-define('SMTP_HOST', getenv('SMTP_HOST') ?: 'smtp.gmail.com');
-define('SMTP_PORT', getenv('SMTP_PORT') ?: 587);
-define('SMTP_USERNAME', getenv('SMTP_USERNAME') ?: 'bethueldadaeb@gmail.com');
-define('SMTP_PASSWORD', getenv('SMTP_PASSWORD') ?: 'nnza gvcu zumo qwgc');
-define('SMTP_FROM', getenv('SMTP_FROM') ?: 'bethueldadaeb@gmail.com');
-define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?: 'Smart Restaurant System');
+// Email Configuration
+define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_PORT', 587);
+define('SMTP_USERNAME', 'bethueldadaeb@gmail.com');
+define('SMTP_PASSWORD', 'vszblqlobaqahbsf');
+define('SMTP_FROM', 'bethueldadaeb@gmail.com');
+define('SMTP_FROM_NAME', 'Smart Restaurant System');
 
-// SMS settings
-define('SMS_API_KEY', getenv('SMS_API_KEY') ?: 'SK437712c347e9bb64bf1accc765313d79');
-define('SMS_SENDER_ID', getenv('SMS_SENDER_ID') ?: 'RESTAURANT');
+// Autoload PHPMailer
+require_once __DIR__.'/vendor/autoload.php';
+
+if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+    die("❌ PHPMailer not found. Run: composer require phpmailer/phpmailer");
+}
+
+// Start session only if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
