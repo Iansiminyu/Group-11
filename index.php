@@ -255,7 +255,7 @@ require 'config.php';
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="container">
-        <h1 class="hero-title">🍽 Smart Restaurant System</h1>
+        <h1 class="hero-title">🍽️ Smart Restaurant System</h1>
         <p class="hero-subtitle">
             Revolutionary restaurant management platform with advanced 2FA security, 
             real-time reservations, and comprehensive order management
@@ -365,28 +365,36 @@ require 'config.php';
                     $tableCount = $stmt->fetchColumn();
                     
                     echo "<div class='status-item'>
-                            <h4 style='margin: 0 0 10px 0; color: #4ade80;'>🗄 Schema</h4>
+                            <h4 style='margin: 0 0 10px 0; color: #4ade80;'>🗄️ Schema</h4>
                             <p style='margin: 0; font-size: 0.9rem;'>Database Schema</p>
                             <p style='margin: 5px 0 0 0; font-weight: bold;'>{$tableCount} Tables Active</p>
                           </div>";
                 } catch (PDOException $e) {
                     echo "<div class='status-item'>
-                            <h4 style='margin: 0 0 10px 0; color: #fbbf24;'>⚠ Schema</h4>
+                            <h4 style='margin: 0 0 10px 0; color: #fbbf24;'>⚠️ Schema</h4>
                             <p style='margin: 0; font-size: 0.9rem;'>Setup Required</p>
                           </div>";
                 }
                 
-                // Email configuration status
-                if (defined('SMTP_PASSWORD') && SMTP_PASSWORD !== 'your_gmail_app_password') {
-                    echo "<div class='status-item'>
-                            <h4 style='margin: 0 0 10px 0; color: #4ade80;'>📧 Email</h4>
-                            <p style='margin: 0; font-size: 0.9rem;'>SMTP Configured</p>
-                            <p style='margin: 5px 0 0 0; font-weight: bold;'>2FA Ready</p>
-                          </div>";
-                } else {
+// Email configuration status 
+                try {
+                    $emailService = app('emailService');
+                    if ($emailService && class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+                        echo "<div class='status-item'>
+                                <h4 style='margin: 0 0 10px 0; color: #4ade80;'>📧 Email</h4>
+                                <p style='margin: 0; font-size: 0.9rem;'>SMTP Configured</p>
+                                <p style='margin: 5px 0 0 0; font-weight: bold;'>2FA Ready</p>
+                              </div>";
+                    } else {
+                        echo "<div class='status-item'>
+                                <h4 style='margin: 0 0 10px 0; color: #fbbf24;'>⚠ Email</h4>
+                                <p style='margin: 0; font-size: 0.9rem;'>PHPMailer Missing</p>
+                              </div>";
+                    }
+                } catch (Exception $e) {
                     echo "<div class='status-item'>
                             <h4 style='margin: 0 0 10px 0; color: #fbbf24;'>⚠ Email</h4>
-                            <p style='margin: 0; font-size: 0.9rem;'>Configuration Needed</p>
+                            <p style='margin: 0; font-size: 0.9rem;'>Configuration Error</p>
                           </div>";
                 }
                 
@@ -408,7 +416,7 @@ require 'config.php';
         </div>
         
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.2);">
-            <p style="margin: 0; opacity: 0.8;">🛡 Secured by enterprise-grade encryption | 🚀 Powered by PostgreSQL & PHP</p>
+            <p style="margin: 0; opacity: 0.8;">🛡️ Secured by enterprise-grade encryption | 🚀 Powered by PostgreSQL & PHP</p>
         </div>
     </div>
 </div>

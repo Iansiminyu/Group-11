@@ -23,7 +23,7 @@ try {
     if (sendEmail2FACode('bethueldadaeb@gmail.com', 'TEST123')) {
         echo "✅ Email System: Working<br>";
     } else {
-        echo "⚠ Email System: Check configuration<br>";
+        echo "⚠️ Email System: Check configuration<br>";
     }
     
     echo "<h3>🎉 System is fully operational!</h3>";
