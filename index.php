@@ -376,17 +376,25 @@ require 'config.php';
                           </div>";
                 }
                 
-                // Email configuration status
-                if (defined('SMTP_PASSWORD') && SMTP_PASSWORD !== 'vszblqlobaqahbsf') {
+// Email configuration status 
+                try {
+                    $emailService = app('emailService');
+                    if ($emailService && class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+                        echo "<div class='status-item'>
+                                <h4 style='margin: 0 0 10px 0; color: #4ade80;'>📧 Email</h4>
+                                <p style='margin: 0; font-size: 0.9rem;'>SMTP Configured</p>
+                                <p style='margin: 5px 0 0 0; font-weight: bold;'>2FA Ready</p>
+                              </div>";
+                    } else {
+                        echo "<div class='status-item'>
+                                <h4 style='margin: 0 0 10px 0; color: #fbbf24;'>⚠ Email</h4>
+                                <p style='margin: 0; font-size: 0.9rem;'>PHPMailer Missing</p>
+                              </div>";
+                    }
+                } catch (Exception $e) {
                     echo "<div class='status-item'>
-                            <h4 style='margin: 0 0 10px 0; color: #4ade80;'>📧 Email</h4>
-                            <p style='margin: 0; font-size: 0.9rem;'>SMTP Configured</p>
-                            <p style='margin: 5px 0 0 0; font-weight: bold;'>2FA Ready</p>
-                          </div>";
-                } else {
-                    echo "<div class='status-item'>
-                            <h4 style='margin: 0 0 10px 0; color: #fbbf24;'>⚠️ Email</h4>
-                            <p style='margin: 0; font-size: 0.9rem;'>Configuration Needed</p>
+                            <h4 style='margin: 0 0 10px 0; color: #fbbf24;'>⚠ Email</h4>
+                            <p style='margin: 0; font-size: 0.9rem;'>Configuration Error</p>
                           </div>";
                 }
                 
