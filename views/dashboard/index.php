@@ -55,15 +55,48 @@
 
 <div class="card">
     <h3>🍽️ Restaurant Management</h3>
-    <p>Welcome to your restaurant management dashboard. Here you can:</p>
-    <ul style="text-align: left; margin: 20px 0;">
-        <li>📋 Manage table reservations</li>
-        <li>🍴 Process food orders</li>
-        <li>📈 View sales analytics</li>
-        <li>👥 Manage customer accounts</li>
-    </ul>
-    <div class="alert alert-info">
-        <strong>Coming Soon:</strong> Full restaurant management features will be available in the next update!
+    <p>Access your complete restaurant management system:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+        <div class="feature-card">
+            <h4>📋 Orders Management</h4>
+            <p>Create and manage customer orders, track status, and process payments.</p>
+            <div style="margin-top: 15px;">
+                <a class="btn btn-primary btn-small" href="simple-orders.php">View Orders</a>
+                <a class="btn btn-success btn-small" href="orders.php">Advanced Orders</a>
+            </div>
+        </div>
+        
+        <div class="feature-card">
+            <h4>📅 Reservations</h4>
+            <p>Handle table bookings, check availability, and manage reservations.</p>
+            <div style="margin-top: 15px;">
+                <a class="btn btn-primary btn-small" href="simple-reservations.php">View Reservations</a>
+                <a class="btn btn-success btn-small" href="reservations.php">Advanced Reservations</a>
+            </div>
+        </div>
+        
+        <div class="feature-card">
+            <h4>📦 Inventory</h4>
+            <p>Track stock levels, manage menu items, and monitor inventory.</p>
+            <div style="margin-top: 15px;">
+                <a class="btn btn-primary btn-small" href="simple-inventory.php">View Inventory</a>
+                <a class="btn btn-success btn-small" href="inventory.php">Advanced Inventory</a>
+            </div>
+        </div>
+        
+        <div class="feature-card">
+            <h4>📊 Reports</h4>
+            <p>View sales reports, analytics, and business insights.</p>
+            <div style="margin-top: 15px;">
+                <a class="btn btn-primary btn-small" href="reports.php">View Reports</a>
+                <a class="btn btn-outline btn-small" href="/api/stats" target="_blank">API Stats</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-20">
+        <a class="btn btn-large" href="manage.php">🚀 Open Full Management Dashboard</a>
     </div>
 </div>
 

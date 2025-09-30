@@ -132,6 +132,196 @@ class User
     }
 
     /**
+     * Update user password
+     */
+    public function updatePassword(string $newPassword): bool
+    {
+        if (!$this->id) {
+            throw new \RuntimeException("Cannot update password: User not loaded");
+        }
+
+        try {
+            $query = "UPDATE accounts SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            $this->db->execute($query, [$hashedPassword, $this->id]);
+
+            $this->passwordHash = $hashedPassword;
+            return true;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update password: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create password reset token
+     */
+    public function createPasswordResetToken(): string
+    {
+        if (!$this->id) {
+            throw new \RuntimeException("Cannot create reset token: User not loaded");
+        }
+
+        try {
+            // Generate secure token
+            $token = bin2hex(random_bytes(32));
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+            // Store token in database
+            $query = "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)
+                     ON CONFLICT (user_id) DO UPDATE SET 
+                     token = EXCLUDED.token, 
+                     expires_at = EXCLUDED.expires_at, 
+                     created_at = CURRENT_TIMESTAMP";
+            
+            $this->db->execute($query, [$this->id, $token, $expiresAt]);
+
+            return $token;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to create reset token: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Verify password reset token
+     */
+    public static function verifyPasswordResetToken(string $token): ?User
+    {
+        try {
+            $db = Database::getInstance();
+            
+            $query = "SELECT u.*, prt.token, prt.expires_at
+                     FROM accounts u 
+                     JOIN password_reset_tokens prt ON u.id = prt.user_id
+                     WHERE prt.token = ? AND prt.expires_at > CURRENT_TIMESTAMP";
+            
+            $data = $db->fetchOne($query, [$token]);
+            
+            if ($data) {
+                $user = new self();
+                return $user->hydrate($data);
+            }
+            
+            return null;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to verify reset token: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete password reset token
+     */
+    public function deletePasswordResetToken(): bool
+    {
+        if (!$this->id) {
+            throw new \RuntimeException("Cannot delete reset token: User not loaded");
+        }
+
+        try {
+            $query = "DELETE FROM password_reset_tokens WHERE user_id = ?";
+            $this->db->execute($query, [$this->id]);
+            return true;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to delete reset token: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get all users with pagination
+     */
+    public static function getAll(int $page = 1, int $limit = 20, array $filters = []): array
+    {
+        $db = Database::getInstance();
+        $offset = ($page - 1) * $limit;
+        $where = [];
+        $params = [];
+
+        // Build WHERE clause based on filters
+        if (!empty($filters['search'])) {
+            $where[] = "(username ILIKE ? OR email ILIKE ?)";
+            $searchTerm = '%' . $filters['search'] . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
+        if (isset($filters['is_2fa_enabled'])) {
+            $where[] = "is_2fa_enabled = ?";
+            $params[] = $filters['is_2fa_enabled'];
+        }
+
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $query = "SELECT id, username, email, phone, two_factor_type, is_2fa_enabled, created_at, updated_at
+                 FROM accounts 
+                 {$whereClause}
+                 ORDER BY created_at DESC 
+                 LIMIT ? OFFSET ?";
+
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $users = $db->fetchAll($query, $params);
+
+        // Get total count
+        $countQuery = "SELECT COUNT(*) FROM accounts {$whereClause}";
+        $countParams = array_slice($params, 0, -2);
+        $total = $db->fetchOne($countQuery, $countParams)['count'];
+
+        return [
+            'users' => $users,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => ceil($total / $limit),
+                'total_records' => $total,
+                'per_page' => $limit
+            ]
+        ];
+    }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(array $data): bool
+    {
+        if (!$this->id) {
+            throw new \RuntimeException("Cannot update profile: User not loaded");
+        }
+
+        try {
+            $fields = [];
+            $params = [];
+
+            $allowedFields = ['username', 'email', 'phone'];
+            
+            foreach ($allowedFields as $field) {
+                if (array_key_exists($field, $data)) {
+                    $fields[] = "{$field} = ?";
+                    $params[] = $data[$field];
+                }
+            }
+
+            if (empty($fields)) {
+                return true; // No changes to make
+            }
+
+            $params[] = $this->id;
+
+            $query = "UPDATE accounts SET " . implode(', ', $fields) . ", updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+            $this->db->execute($query, $params);
+
+            // Update object properties
+            foreach ($allowedFields as $field) {
+                if (array_key_exists($field, $data)) {
+                    $this->$field = $data[$field];
+                }
+            }
+
+            return true;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update profile: " . $e->getMessage());
+        }
+    }
+
+    /**
      * Hydrate user object with data from database
      */
     private function hydrate(array $data): User

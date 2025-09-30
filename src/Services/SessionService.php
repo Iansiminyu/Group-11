@@ -67,6 +67,29 @@ class SessionService
     }
 
     /**
+     * Get current user data
+     */
+    public function getCurrentUser(): ?array
+    {
+        $userId = $this->getUserId();
+        if (!$userId) {
+            return null;
+        }
+
+        try {
+            // Get user data from database
+            $db = \SmartRestaurant\Core\Database::getInstance();
+            $query = "SELECT id, username, email, phone, two_factor_type, is_2fa_enabled, created_at FROM accounts WHERE id = ?";
+            $userData = $db->fetchOne($query, [$userId]);
+            
+            return $userData ?: null;
+        } catch (\Exception $e) {
+            error_log("Error getting current user: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Set temporary user ID for 2FA process
      */
     public function setTempUserId(int $userId): void
