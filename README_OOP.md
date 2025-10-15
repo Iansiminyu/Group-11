@@ -319,4 +319,3 @@ To migrate from procedural to OOP:
 4. Replace helper functions with service classes
 5. Use the container to access services
 
-The OOP architecture is **backward compatible** - existing files continue to work while you gradually migrate to the new structure.
