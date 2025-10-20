@@ -10,7 +10,7 @@ if (!$sessionService->isLoggedIn()) {
 $currentUser = $sessionService->getCurrentUser();
 
 $action = get('action', 'list');
-$error = '';
+$errr = '';
 $success = '';
 
 // Simple inventory display using existing inventory table
