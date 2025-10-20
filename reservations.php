@@ -96,10 +96,7 @@ try {
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8em;
+        
         }
         .btn-action {
             border-radius: 20px;
