@@ -207,7 +207,6 @@ class DSNConfigurator
                     break;
                 case 'Priority':
                 case 'SMTPDebug':
-                case 'WordWrap':
                     $mailer->$key = (int) $value;
                     break;
                 default:
