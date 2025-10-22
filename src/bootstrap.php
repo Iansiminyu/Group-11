@@ -117,7 +117,9 @@ function app(string $service = null)
  */
 function redirect(string $url): void
 {
-    header("Location: {$url}");
+    // Prevent header injection and ensure URL is safe
+    $safe = filter_var($url, FILTER_SANITIZE_URL);
+    header("Location: {$safe}");
     exit;
 }
 
@@ -142,7 +144,7 @@ function isPost(): bool
  */
 function post(string $key, $default = null)
 {
-    return $_POST[$key] ?? $default;
+    return isset($_POST[$key]) ? $_POST[$key] : $default;
 }
 
 /**
@@ -150,5 +152,33 @@ function post(string $key, $default = null)
  */
 function get(string $key, $default = null)
 {
-    return $_GET[$key] ?? $default;
+    return isset($_GET[$key]) ? $_GET[$key] : $default;
+}
+
+// Provide a getallheaders polyfill for non-Apache environments
+if (!function_exists('getallheaders')) {
+    function getallheaders(): array
+    {
+        $headers = [];
+        foreach ($_SERVER as $name => $value) {
+            if (str_starts_with($name, 'HTTP_')) {
+                $headerName = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+                $headers[$headerName] = $value;
+            }
+        }
+        return $headers;
+    }
+}
+
+/**
+ * Safe input retrieval with optional sanitization
+ */
+function input(string $key, $default = null, bool $sanitize = true)
+{
+    $value = $_REQUEST[$key] ?? $default;
+    if ($value === null) return $default;
+    if ($sanitize && is_string($value)) {
+        return htmlspecialchars(trim($value), ENT_QUOTES, 'UTF-8');
+    }
+    return $value;
 }

@@ -20,12 +20,14 @@ class Database
      */
     private function __construct()
     {
+        // Load configuration from environment variables when available.
+        // This prevents committing secrets to source control and allows runtime configuration.
         $this->config = [
-            'host' => 'localhost',
-            'port' => '5434',
-            'dbname' => 'auth_system',
-            'username' => 'postgres',
-            'password' => '1a2bacac'
+            'host' => getenv('DB_HOST') ?: 'localhost',
+            'port' => getenv('DB_PORT') ?: '5434',
+            'dbname' => getenv('DB_NAME') ?: 'auth_system',
+            'username' => getenv('DB_USER') ?: 'postgres',
+            'password' => getenv('DB_PASS') ?: ''
         ];
 
         $this->connect();

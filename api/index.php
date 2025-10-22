@@ -43,24 +43,33 @@ if (in_array($requestMethod, ['POST', 'PUT', 'PATCH'])) {
 
 // Simple authentication check (you may want to implement JWT or similar)
 function requireAuth(): ?array {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? '';
-    
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+    $authHeader = '';
+    if (is_array($headers)) {
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    }
+
     if (empty($authHeader) || !str_starts_with($authHeader, 'Bearer ')) {
         http_response_code(401);
         echo json_encode(['error' => 'Authentication required']);
         exit;
     }
-    
-    // In a real implementation, you'd validate the token
-    // For now, we'll just check if it's provided
-    return ['user_id' => 1]; // Mock user
+
+    // TODO: validate token (JWT or other). For now return mock user.
+    return ['user_id' => 1];
 }
 
 // Response helper functions
 function jsonResponse(array $data, int $statusCode = 200): void {
     http_response_code($statusCode);
-    echo json_encode($data);
+    $payload = json_encode($data);
+    if ($payload === false) {
+        // Log the error and return a safe message
+        error_log('json_encode error: ' . json_last_error_msg());
+        echo json_encode(['error' => 'Server error encoding response']);
+        exit;
+    }
+    echo $payload;
     exit;
 }
 
@@ -429,6 +438,7 @@ try {
     }
 
 } catch (\Exception $e) {
-    error_log('API Error: ' . $e->getMessage());
-    errorResponse('Internal server error: ' . $e->getMessage(), 500);
+    // Log the detailed exception server-side but return a generic message to clients
+    error_log('API Error: ' . $e->getMessage() . " in " . $e->getFile() . ':' . $e->getLine());
+    errorResponse('Internal server error', 500);
 }
