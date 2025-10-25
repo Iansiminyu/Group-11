@@ -17,38 +17,42 @@ $reservationId = get('id');
 $error = '';
 $success = '';
 
-// Handle form submissions
+// Handle form submissions with CSRF token validation
 if (isPost()) {
-    try {
-        if ($action === 'create') {
-            $reservationData = [
-                'customer_id' => $currentUser['id'],
-                'customer_name' => post('customer_name'),
-                'customer_phone' => post('customer_phone'),
-                'customer_email' => post('customer_email'),
-                'table_number' => post('table_number'),
-                'party_size' => (int)post('party_size'),
-                'reservation_date' => post('reservation_date'),
-                'reservation_time' => post('reservation_time'),
-                'special_requests' => post('special_requests')
-            ];
-            
-            $reservation = $reservationModel->create($reservationData);
-            $success = "Reservation created successfully!";
-            $action = 'view';
-            $reservationId = $reservation['id'];
-            
-        } elseif ($action === 'update' && $reservationId) {
-            $updateData = [
-                'status' => post('status'),
-                'special_requests' => post('special_requests')
-            ];
-            
-            $reservation = $reservationModel->update($reservationId, $updateData);
-            $success = "Reservation updated successfully!";
+    if (!validateCsrfToken(post('csrf_token'))) {
+        $error = 'Invalid CSRF token. Please try again.';
+    } else {
+        try {
+            if ($action === 'create') {
+                $reservationData = [
+                    'customer_id' => $currentUser['id'],
+                    'customer_name' => post('customer_name'),
+                    'customer_phone' => post('customer_phone'),
+                    'customer_email' => post('customer_email'),
+                    'table_number' => post('table_number'),
+                    'party_size' => (int)post('party_size'),
+                    'reservation_date' => post('reservation_date'),
+                    'reservation_time' => post('reservation_time'),
+                    'special_requests' => post('special_requests')
+                ];
+                
+                $reservation = $reservationModel->create($reservationData);
+                $success = "Reservation created successfully!";
+                $action = 'view';
+                $reservationId = $reservation['id'];
+                
+            } elseif ($action === 'update' && $reservationId) {
+                $updateData = [
+                    'status' => post('status'),
+                    'special_requests' => post('special_requests')
+                ];
+                
+                $reservation = $reservationModel->update($reservationId, $updateData);
+                $success = "Reservation updated successfully!";
+            }
+        } catch (Exception $e) {
+            $error = $e->getMessage();
         }
-    } catch (Exception $e) {
-        $error = $e->getMessage();
     }
 }
 
