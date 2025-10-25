@@ -25,5 +25,5 @@ try {
     // Redirect to error page or show generic error
     $sessionService = app('sessionService');
     $sessionService->setErrorMessage('An error occurred. Please try again.');
-    redirect('enable_2fa.php');
+    redirect('error.php');
 }
