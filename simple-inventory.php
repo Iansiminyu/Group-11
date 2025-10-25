@@ -46,10 +46,15 @@ try {
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .inventory-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .item-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
@@ -101,6 +106,30 @@ try {
         .out-of-stock-alert {
             border-left: 4px solid #dc3545;
             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s, color 0.3s;
+        }
+        .btn-primary {
+            background: #6f42c1;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a359e;
+        }
+        .btn-outline {
+            background: white;
+            color: #6f42c1;
+            border: 2px solid #6f42c1;
+        }
+        .btn-outline:hover {
+            background: #6f42c1;
+            color: white;
         }
     </style>
 </head>
@@ -155,7 +184,7 @@ try {
                     ?>
                     <div class="<?= $cardClass ?>">
                         <div class="item-header">
-                            <div class="item-name"><?= e($item['name']) ?></div>
+                            <div class="item-name">✅ <?= e($item['name']) ?></div>
                             <div class="stock-badge stock-<?= $stockLevel ?>">
                                 <?= $item['current_stock'] ?> <?= e($item['unit_of_measure']) ?>
                             </div>
@@ -223,19 +252,19 @@ try {
             <h3>Inventory Summary</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center;">
                 <div>
-                    <h2 style="color: #6f42c1;"><?= count($items) ?></h2>
+                    <h2 style="color: #6f42c1;">✅ <?= count($items) ?></h2>
                     <p>Total Items</p>
                 </div>
                 <div>
-                    <h2 style="color: #28a745;"><?= count(array_filter($items, fn($i) => $i['current_stock'] > $i['minimum_stock'])) ?></h2>
+                    <h2 style="color: #28a745;">✅ <?= count(array_filter($items, fn($i) => $i['current_stock'] > $i['minimum_stock'])) ?></h2>
                     <p>Well Stocked</p>
                 </div>
                 <div>
-                    <h2 style="color: #ffc107;"><?= count(array_filter($items, fn($i) => $i['current_stock'] <= $i['minimum_stock'] && $i['current_stock'] > 0)) ?></h2>
+                    <h2 style="color: #ffc107;">⚠️ <?= count(array_filter($items, fn($i) => $i['current_stock'] <= $i['minimum_stock'] && $i['current_stock'] > 0)) ?></h2>
                     <p>Low Stock</p>
                 </div>
                 <div>
-                    <h2 style="color: #dc3545;"><?= count(array_filter($items, fn($i) => $i['current_stock'] == 0)) ?></h2>
+                    <h2 style="color: #dc3545;">❌ <?= count(array_filter($items, fn($i) => $i['current_stock'] == 0)) ?></h2>
                     <p>Out of Stock</p>
                 </div>
             </div>
