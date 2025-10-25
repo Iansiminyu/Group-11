@@ -14,16 +14,19 @@ $success = '';
 // Get inventory directly from database
 try {
     $pdo = SmartRestaurant\Core\Database::getInstance()->getConnection();
-    
-    $stmt = $pdo->query("
-        SELECT * FROM inventory 
-        ORDER BY name ASC
-    ");
+
+    $stmt = $pdo->prepare("SELECT * FROM inventory ORDER BY name ASC");
+    $stmt->execute();
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
 } catch (Exception $e) {
-    $error = $e->getMessage();
+    error_log($e->getMessage()); // Log the error for debugging
+    $error = 'An error occurred while fetching inventory. Please try again later.';
     $items = [];
+}
+
+function sanitize($value) {
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 ?>
 
@@ -149,13 +152,13 @@ try {
 
         <?php if ($error): ?>
             <div class="alert alert-error">
-                ⚠️ <?= e($error) ?>
+                ⚠️ <?= sanitize($error) ?>
             </div>
         <?php endif; ?>
 
         <?php if ($success): ?>
             <div class="alert alert-success">
-                ✅ <?= e($success) ?>
+                ✅ <?= sanitize($success) ?>
             </div>
         <?php endif; ?>
 
@@ -182,17 +185,17 @@ try {
                         $cardClass = 'inventory-card low-stock-alert';
                     }
                     ?>
-                    <div class="<?= $cardClass ?>">
+                    <div class="<?= sanitize($cardClass) ?>">
                         <div class="item-header">
-                            <div class="item-name">✅ <?= e($item['name']) ?></div>
-                            <div class="stock-badge stock-<?= $stockLevel ?>">
-                                <?= $item['current_stock'] ?> <?= e($item['unit_of_measure']) ?>
+                            <div class="item-name">✅ <?= sanitize($item['name']) ?></div>
+                            <div class="stock-badge stock-<?= sanitize($stockLevel) ?>">
+                                <?= sanitize($item['current_stock']) ?> <?= sanitize($item['unit_of_measure']) ?>
                             </div>
                         </div>
                         
                         <?php if ($item['description']): ?>
                         <div style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
-                            <?= e(substr($item['description'], 0, 100)) ?><?= strlen($item['description']) > 100 ? '...' : '' ?>
+                            <?= sanitize(substr($item['description'], 0, 100)) ?><?= strlen($item['description']) > 100 ? '...' : '' ?>
                         </div>
                         <?php endif; ?>
                         
@@ -209,30 +212,30 @@ try {
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: center;">
                             <div>
-                                <strong><?= $item['current_stock'] ?></strong><br>
+                                <strong><?= sanitize($item['current_stock']) ?></strong><br>
                                 <small style="color: #666;">Current</small>
                             </div>
                             <div>
-                                <strong><?= $item['minimum_stock'] ?></strong><br>
+                                <strong><?= sanitize($item['minimum_stock']) ?></strong><br>
                                 <small style="color: #666;">Min Stock</small>
                             </div>
                             <div>
-                                <strong><?= $item['maximum_stock'] ?></strong><br>
+                                <strong><?= sanitize($item['maximum_stock']) ?></strong><br>
                                 <small style="color: #666;">Max Stock</small>
                             </div>
                         </div>
                         
                         <div style="margin-bottom: 10px;">
-                            <strong>Category:</strong> <?= e($item['category']) ?><br>
-                            <strong>SKU:</strong> <?= e($item['sku']) ?><br>
-                            <strong>Status:</strong> <?= e($item['status']) ?>
+                            <strong>Category:</strong> <?= sanitize($item['category']) ?><br>
+                            <strong>SKU:</strong> <?= sanitize($item['sku']) ?><br>
+                            <strong>Status:</strong> <?= sanitize($item['status']) ?>
                         </div>
                         
                         <?php if ($item['supplier_name']): ?>
                         <div style="padding: 8px; background: #f8f9fa; border-radius: 5px; font-size: 0.9em;">
-                            <strong>Supplier:</strong> <?= e($item['supplier_name']) ?><br>
+                            <strong>Supplier:</strong> <?= sanitize($item['supplier_name']) ?><br>
                             <?php if ($item['supplier_contact']): ?>
-                            <strong>Contact:</strong> <?= e($item['supplier_contact']) ?>
+                            <strong>Contact:</strong> <?= sanitize($item['supplier_contact']) ?>
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>
@@ -280,9 +283,9 @@ try {
             <ul>
                 <?php foreach (array_slice($lowStockItems, 0, 5) as $item): ?>
                 <li>
-                    <strong><?= e($item['name']) ?></strong> - 
-                    Only <?= $item['current_stock'] ?> <?= e($item['unit_of_measure']) ?> left
-                    (Min: <?= $item['minimum_stock'] ?>)
+                    <strong><?= sanitize($item['name']) ?></strong> - 
+                    Only <?= sanitize($item['current_stock']) ?> <?= sanitize($item['unit_of_measure']) ?> left
+                    (Min: <?= sanitize($item['minimum_stock']) ?>)
                 </li>
                 <?php endforeach; ?>
             </ul>
