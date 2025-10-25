@@ -7,18 +7,25 @@
 require_once __DIR__ . '/src/bootstrap.php';
 
 try {
-    // Get the dashboard controller
+    // Get the dashboard controller instance
+    /** @var \App\Controllers\DashboardController $dashboardController */
     $dashboardController = app('dashboardController');
-    
-    // Show dashboard (handles authentication check internally)
+
+    // Render the dashboard (handles authentication check internally)
     $dashboardController->index();
-    
 } catch (Exception $e) {
-    // Log error and show user-friendly message
-    error_log("Dashboard error: " . $e->getMessage());
-    
-    // Redirect to error page or show generic error
+    // Log error with additional context for debugging
+    error_log(sprintf(
+        "[Dashboard Error] %s in %s on line %d",
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine()
+    ));
+
+    // Redirect to login page with a generic error message
+    /** @var \App\Services\SessionService $sessionService */
     $sessionService = app('sessionService');
-    $sessionService->setErrorMessage('An error occurred. Please try again.');
+    $sessionService->setErrorMessage('An unexpected error occurred. Please try again later.');
+    
     redirect('login.php');
 }
