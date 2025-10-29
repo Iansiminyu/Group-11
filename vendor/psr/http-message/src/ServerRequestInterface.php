@@ -53,16 +53,7 @@ interface ServerRequestInterface extends RequestInterface
      */
     public function getServerParams(): array;
 
-    /**
-     * Retrieve cookies.
-     *
-     * Retrieves cookies sent by the client to the server.
-     *
-     * The data MUST be compatible with the structure of the $_COOKIE
-     * superglobal.
-     *
-     * @return array
-     */
+   
     public function getCookieParams(): array;
 
     /**
