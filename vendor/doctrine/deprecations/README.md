@@ -38,11 +38,7 @@ Tracking is enabled with all three modes and provides access to all triggered
 deprecations and their individual count:
 
 ```php
-$deprecations = \Doctrine\Deprecations\Deprecation::getTriggeredDeprecations();
 
-foreach ($deprecations as $identifier => $count) {
-    echo $identifier . " was triggered " . $count . " times\n";
-}
 ```
 
 ### Suppressing Specific Deprecations
@@ -50,13 +46,13 @@ foreach ($deprecations as $identifier => $count) {
 Disable triggering about specific deprecations:
 
 ```php
-\Doctrine\Deprecations\Deprecation::ignoreDeprecations("https://link/to/deprecations-description-identifier");
+
 ```
 
 Disable all deprecations from a package
 
 ```php
-\Doctrine\Deprecations\Deprecation::ignorePackage("doctrine/orm");
+
 ```
 
 ### Other Operations
